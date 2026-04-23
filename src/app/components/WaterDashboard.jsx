@@ -1663,7 +1663,7 @@ export default function WaterDashboard() {
                 }
               </div>
               {/* Table */}
-              <div style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",overflow:"hidden"}}>
+              <div style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",}}>
                 <div style={{padding:"10px 16px",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",gap:6}}>
                   <IconStation size={12} color="#1d4ed8"/>
                   <span style={{fontSize:12,fontWeight:700,color:"#0f172a"}}>ตารางสรุปสถานีทั้งหมด ({STATIONS.length} สถานี)</span>
