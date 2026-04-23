@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -23,4 +24,16 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+:root {
+  --bg: #040d1a;
+  --panel: #071628;
+  --panel2: #0a1e35;
+  --border: #1a3a5c;
+  --accent: #00b4ff;
+  --accent2: #00e5a0;
+  --warn: #ffb300;
+  --danger: #ff4444;
+  --text: #c8e0f4;
+  --text2: #6a9ab8;
 }
