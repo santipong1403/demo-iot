@@ -1562,7 +1562,7 @@ export default function WaterDashboard() {
     {id:"waterinformation",  label:"ข้อมูลน้ำ",    Icon:IconWater},
     {id:"compare",           label:"เปรียบเทียบ",   Icon:IconCompare},
     {id:"forecast",          label:"คาดการณ์",      Icon:IconForecast},
-    {id:"flowmap",           label:"ผังน้ำ",        Icon:IconMap},
+    {id:"flowmap",           label:"ผังน้ำ1",        Icon:IconMap},
   ];
 
   return (
