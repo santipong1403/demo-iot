@@ -436,54 +436,72 @@ function StationModal({ station, onClose }) {
 
 // ─── CAMERA SCENES ────────────────────────────────────────────────────────────
 const CAM_SCENES = [
-  (wPct, col) => (
-    <svg viewBox="0 0 200 110" style={{ width: "100%", height: "100%", display: "block" }}>
-      <rect width={200} height={110} fill="#c8dff0" /><rect width={200} height={58} fill="#b8d0e8" />
-      {[20, 45, 70, 95, 120, 145, 168].map(x => <ellipse key={x} cx={x} cy={52} rx={12} ry={8} fill="#6a9b5a" opacity={0.7} />)}
-      <rect x={80} y={20} width={40} height={55} fill="#c0c8d0" /><rect x={85} y={25} width={30} height={45} fill="#aab2ba" />
-      <rect x={90} y={48} width={20} height={22} fill="#3b82f6" opacity={0.6} />
-      <rect x={84} y={44} width={4} height={30} fill="#8896a0" /><rect x={112} y={44} width={4} height={30} fill="#8896a0" />
-      <polygon points={`0,${110 - wPct * 0.55} 80,${110 - wPct * 0.55} 80,110 0,110`} fill="#8a7060" />
-      <polygon points={`120,${110 - wPct * 0.55} 200,${110 - wPct * 0.55} 200,110 120,110`} fill="#8a7060" />
-      <rect x={0} y={110 - wPct * 0.55} width={80} height={wPct * 0.55} fill={col} opacity={0.75} />
-      <rect x={90} y={48} width={20} height={62} fill={col} opacity={0.7} />
-      <rect x={120} y={110 - wPct * 0.55} width={80} height={wPct * 0.55} fill={col} opacity={0.75} />
-    </svg>
-  ),
-  (wPct, col) => (
-    <svg viewBox="0 0 200 110" style={{ width: "100%", height: "100%", display: "block" }}>
-      <rect width={200} height={110} fill="#d4e8c2" />
-      <polygon points={`40,110 60,${110 - wPct * 0.5} 140,${110 - wPct * 0.5} 160,110`} fill="#9a8870" />
-      <rect x={60} y={110 - wPct * 0.5} width={80} height={wPct * 0.5} fill={col} opacity={0.8} />
-    </svg>
-  ),
-  (wPct, col) => (
-    <svg viewBox="0 0 200 110" style={{ width: "100%", height: "100%", display: "block" }}>
-      <rect width={200} height={110} fill="#bccfdc" />
-      <rect x={0} y={40} width={60} height={70} fill="#c8cdd2" /><rect x={140} y={40} width={60} height={70} fill="#c8cdd2" />
-      <rect x={0} y={38} width={200} height={8} fill="#aab0b8" />
-      <rect x={0} y={110 - (wPct * 0.65 + 8)} width={64} height={wPct * 0.65 + 8} fill={col} opacity={0.82} />
-      <rect x={136} y={110 - wPct * 0.35} width={64} height={wPct * 0.35} fill={col} opacity={0.7} />
-    </svg>
-  ),
-  (wPct, col) => (
-    <svg viewBox="0 0 200 110" style={{ width: "100%", height: "100%", display: "block" }}>
-      <rect width={200} height={110} fill="#dce8d8" />
-      <rect x={40} y={25} width={120} height={75} fill="#e8e0d8" />
-      <rect x={0} y={90} width={200} height={20} fill="#9a8870" />
-      <rect x={0} y={110 - wPct * 0.18} width={200} height={wPct * 0.18} fill={col} opacity={0.8} />
-    </svg>
-  ),
+  (wPct, col) => {
+   const w = Number.isFinite(wPct) ? wPct : 0;
+    return (
+      <svg viewBox="0 0 200 110" style={{ width: "100%", height: "100%", display: "block" }}>
+        <rect width={200} height={110} fill="#c8dff0" />
+        <rect width={200} height={58} fill="#b8d0e8" />
+        {[20, 45, 70, 95, 120, 145, 168].map(x => <ellipse key={x} cx={x} cy={52} rx={12} ry={8} fill="#6a9b5a" opacity={0.7} />)}
+        <rect x={80} y={20} width={40} height={55} fill="#c0c8d0" />
+        <rect x={85} y={25} width={30} height={45} fill="#aab2ba" />
+        <rect x={90} y={48} width={20} height={22} fill="#3b82f6" opacity={0.6} />
+        <rect x={84} y={44} width={4} height={30} fill="#8896a0" />
+        <rect x={112} y={44} width={4} height={30} fill="#8896a0" />
+        <polygon points={`0,${110 - w * 0.55} 80,${110 - w * 0.55} 80,110 0,110`} fill="#8a7060" />
+        <polygon points={`120,${110 - w * 0.55} 200,${110 - w * 0.55} 200,110 120,110`} fill="#8a7060" />
+        <rect x={0} y={110 - w * 0.55} width={80} height={w * 0.55} fill={col} opacity={0.75} />
+        <rect x={90} y={48} width={20} height={62} fill={col} opacity={0.7} />
+        <rect x={120} y={110 - w * 0.55} width={80} height={w * 0.55} fill={col} opacity={0.75} />
+      </svg>
+    );
+  },
+  (wPct, col) => {
+    const w = Number.isFinite(wPct) ? wPct : 0;
+    return (
+      <svg viewBox="0 0 200 110" style={{ width: "100%", height: "100%", display: "block" }}>
+        <rect width={200} height={110} fill="#d4e8c2" />
+        <polygon points={`40,110 60,${110 - w * 0.5} 140,${110 - w * 0.5} 160,110`} fill="#9a8870" />
+        <rect x={60} y={110 - w * 0.5} width={80} height={w * 0.5} fill={col} opacity={0.8} />
+      </svg>
+    );
+  },
+  (wPct, col) => {
+    const w = Number.isFinite(wPct) ? wPct : 0;
+    return (
+      <svg viewBox="0 0 200 110" style={{ width: "100%", height: "100%", display: "block" }}>
+        <rect width={200} height={110} fill="#bccfdc" />
+        <rect x={0} y={40} width={60} height={70} fill="#c8cdd2" />
+        <rect x={140} y={40} width={60} height={70} fill="#c8cdd2" />
+        <rect x={0} y={38} width={200} height={8} fill="#aab0b8" />
+        <rect x={0} y={110 - (w * 0.65 + 8)} width={64} height={w * 0.65 + 8} fill={col} opacity={0.82} />
+        <rect x={136} y={110 - w * 0.35} width={64} height={w * 0.35} fill={col} opacity={0.7} />
+      </svg>
+    );
+  },
+  (wPct, col) => {
+    const w = Number.isFinite(wPct) ? wPct : 0;
+    return (
+      <svg viewBox="0 0 200 110" style={{ width: "100%", height: "100%", display: "block" }}>
+        <rect width={200} height={110} fill="#dce8d8" />
+        <rect x={40} y={25} width={120} height={75} fill="#e8e0d8" />
+        <rect x={0} y={90} width={200} height={20} fill="#9a8870" />
+        <rect x={0} y={110 - w * 0.18} width={200} height={w * 0.18} fill={col} opacity={0.8} />
+      </svg>
+    );
+  },
 ];
 
 function CameraFeed({ cam, station, onClick }) {
   const scfg = cam.status === "ok" ? { color: "#047857", bg: "#ecfdf5", label: "ปกติ" } : cam.status === "warning" ? { color: "#b45309", bg: "#fffbeb", label: "เฝ้าระวัง" } : { color: "#b91c1c", bg: "#fef2f2", label: "วิกฤต" };
   const wCol = cam.status === "danger" ? "rgba(239,68,68,0.55)" : cam.status === "warning" ? "rgba(245,158,11,0.45)" : "rgba(59,130,246,0.55)";
-  const SceneRenderer = CAM_SCENES[(cam.id - 1) % CAM_SCENES.length];
+  const camId = Number(cam.id) || 1;
+  const wPct = Number(cam.waterPct) || 0;
+  const SceneRenderer = CAM_SCENES[(camId - 1) % CAM_SCENES.length];
   return (
     <div onClick={onClick} style={{ borderRadius: 8, overflow: "hidden", border: "1px solid #e2e8f0", cursor: "pointer", background: "#fff" }}>
       <div style={{ position: "relative", height: 72, background: "#0f1a2e", overflow: "hidden" }}>
-        <SceneRenderer wPct={cam.waterPct} col={wCol} />
+        <SceneRenderer wPct={wPct} col={wCol} />
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, background: "rgba(0,0,0,0.4)", padding: "2px 5px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
             <div style={{ width: 5, height: 5, borderRadius: "50%", background: scfg.color, animation: "pulse 1.5s infinite" }} />
@@ -834,10 +852,10 @@ function WaterInformationTab({ stations, stationListForCompare, onStationClick }
 }
 
 // ─── COMPARE TAB ──────────────────────────────────────────────────────────────
-function CompareTab() {
+function CompareTab({ activeProject }) {
   return (
     <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", background: "#fff", overflow: "hidden" }}>
-      <img src="/image.png" alt="Compare" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
+      <img src={`/${activeProject}.png`} alt="Compare" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
     </div>
   );
 }
@@ -1030,7 +1048,7 @@ export default function WaterDashboard() {
         )}
 
         {/* COMPARE */}
-        {activeTab === "compare" && <CompareTab />}
+        {activeTab === "compare" && <CompareTab activeProject={activeProject} />}
 
         {/* FORECAST */}
         {activeTab === "forecast" && <ForecastTab stations={STATIONS} />}
