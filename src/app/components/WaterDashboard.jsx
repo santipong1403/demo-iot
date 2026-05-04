@@ -1062,7 +1062,7 @@ export default function WaterDashboard() {
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>ผังน้ำ – {PROJECT_META.name}</span>
               </div>
               <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                {[["U", "#1d4ed8"], ["D", "#047857"], ["O", "#7c3aed"], ["P", "#c2410c"]].map(([l, c]) => (
+                {[["U", "#1d4ed8"], ["D", "#047857"], ["O", "#7c3aed"], ].map(([l, c]) => (
                   <div key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "#64748b" }}>
                     <span style={{ width: 14, height: 14, borderRadius: 3, background: c + "18", border: `1px solid ${c}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: c }}>{l}</span>
                     {l === "U" ? "ด้านใน" : l === "D" ? "ด้านนอก" : l === "O" ? "เปิดบาน" : "ระบาย"}
