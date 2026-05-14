@@ -1005,10 +1005,14 @@ export default function WaterDashboard() {
                 </div>
                 <span style={{ fontSize: 9, color: "#94a3b8" }}>คลิกที่สถานีเพื่อดูรายละเอียด</span>
               </div>
-              <div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 12 }}>
-                <FlowMap stations={STATIONS} mapStations={MAP_STATIONS}   renderCanals={renderCanals}
- onStationClick={setSelectedStation} />
-              </div>
+{/* เปลี่ยนจาก FlowMap เป็นรูปภาพ */}
+<div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 12 }}>
+  <img
+    src={`map.jpg`}
+    alt={`ผังโครงการ ${PROJECT_META.name}`}
+    style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
+  />
+</div>
               <div style={{ padding: "6px 14px", background: "#fff", borderTop: "1px solid #e2e8f0", display: "flex", gap: 14, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
                 {[["#0369a1", "สถานีวัดน้ำ"], ["#1153ED", "ปตร./สน.ปตร."]].map(([c, l]) => (
                   <div key={l} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#64748b" }}>
