@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 // ─── PROJECT DATA REGISTRY ────────────────────────────────────────────────────
 // นำเข้าจากไฟล์ข้อมูลแต่ละโครงการ
+import PhaseecharoenFlowMapOverlay from "./basinmanage/phaseecharoen";
 import * as phaseecharoen from "./phaseecharoen";
 import * as angthong from "./angthong";
 const PROJECTS = [
@@ -18,7 +19,9 @@ const STATUS_CONFIG = {
   danger: { color: "#b91c1c", bg: "#fef2f2", border: "#fca5a5", label: "วิกฤต" },
 };
 function stCfg(s) { return STATUS_CONFIG[s] || STATUS_CONFIG.ok; }
-
+const FLOW_OVERLAYS = {
+  phaseecharoen: PhaseecharoenFlowMapOverlay,
+};
 // ─── SVG ICONS ────────────────────────────────────────────────────────────────
 function IconDashboard({ size = 16, color = "currentColor" }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>;
@@ -141,9 +144,9 @@ function MiniSparkline({ data, color, h = 28 }) {
   const pts = data.map((v, i) => { const x = pad + i * (W - 2 * pad) / (data.length - 1); const y = H - pad - (v - min) / (max - min || 1) * (H - 2 * pad); return `${x},${y}`; }).join(" ");
   const area = `${pad},${H - pad} ${pts} ${pad + (data.length - 1) * (W - 2 * pad) / (data.length - 1)},${H - pad}`;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: h }}>
-      <polygon points={area} fill={color} opacity={0.12} />
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" />
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: h }} suppressHydrationWarning>
+      <polygon points={area} fill={color} opacity={0.12} suppressHydrationWarning />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" suppressHydrationWarning />
     </svg>
   );
 }
@@ -437,7 +440,7 @@ function StationModal({ station, onClose }) {
 // ─── CAMERA SCENES ────────────────────────────────────────────────────────────
 const CAM_SCENES = [
   (wPct, col) => {
-   const w = Number.isFinite(wPct) ? wPct : 0;
+    const w = Number.isFinite(wPct) ? wPct : 0;
     return (
       <svg viewBox="0 0 200 110" style={{ width: "100%", height: "100%", display: "block" }}>
         <rect width={200} height={110} fill="#c8dff0" />
@@ -862,7 +865,7 @@ function CompareTab({ activeProject }) {
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function WaterDashboard() {
-  const [activeProject, setActiveProject] = useState("angthong");
+  const [activeProject, setActiveProject] = useState("phaseecharoen");
   const [activeTab, setActiveTab] = useState("dashboard");
   const [time, setTime] = useState("");
   const [selectedStation, setSelectedStation] = useState(null);
@@ -1005,14 +1008,14 @@ export default function WaterDashboard() {
                 </div>
                 <span style={{ fontSize: 9, color: "#94a3b8" }}>คลิกที่สถานีเพื่อดูรายละเอียด</span>
               </div>
-{/* เปลี่ยนจาก FlowMap เป็นรูปภาพ */}
-<div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 12 }}>
-  <img
-    src={`map.jpg`}
-    alt={`ผังโครงการ ${PROJECT_META.name}`}
-    style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
-  />
-</div>
+              {/* เปลี่ยนจาก FlowMap เป็นรูปภาพ */}
+              <div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 12 }}>
+                <img
+                  src={`map.jpg`}
+                  alt={`ผังโครงการ ${PROJECT_META.name}`}
+                  style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
+                />
+              </div>
               <div style={{ padding: "6px 14px", background: "#fff", borderTop: "1px solid #e2e8f0", display: "flex", gap: 14, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
                 {[["#0369a1", "สถานีวัดน้ำ"], ["#1153ED", "ปตร./สน.ปตร."]].map(([c, l]) => (
                   <div key={l} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#64748b" }}>
@@ -1066,7 +1069,7 @@ export default function WaterDashboard() {
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>ผังน้ำ – {PROJECT_META.name}</span>
               </div>
               <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                {[["U", "#1d4ed8"], ["D", "#047857"], ["O", "#7c3aed"], ].map(([l, c]) => (
+                {[["U", "#1d4ed8"], ["D", "#047857"], ["O", "#7c3aed"],].map(([l, c]) => (
                   <div key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "#64748b" }}>
                     <span style={{ width: 14, height: 14, borderRadius: 3, background: c + "18", border: `1px solid ${c}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: c }}>{l}</span>
                     {l === "U" ? "ด้านใน" : l === "D" ? "ด้านนอก" : l === "O" ? "เปิดบาน" : "ระบาย"}
@@ -1081,10 +1084,20 @@ export default function WaterDashboard() {
                 <span style={{ fontSize: 10, color: "#94a3b8" }}>คลิกที่สถานีเพื่อดูรายละเอียด</span>
               </div>
             </div>
-            <div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 20 }}>
-              <FlowMap stations={STATIONS} mapStations={MAP_STATIONS}   renderCanals={renderCanals}
- onStationClick={setSelectedStation} />
-            </div>
+<div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 20 }}>
+  {/* ห่อรูปด้วย relative container แล้ววาง overlay ซ้อน */}
+  <div style={{ position: "relative", width: "100%", maxWidth: "100%" }}>
+    <img
+      src={`${activeProject}flow.jpg`}
+      alt={`ผังน้ำ ${PROJECT_META.name}`}
+      style={{ width: "100%", height: "auto", display: "block" }}
+    />
+    {(() => {
+      const Overlay = FLOW_OVERLAYS[activeProject];
+      return Overlay ? <Overlay /> : null;
+    })()}
+  </div>
+</div>
           </div>
         )}
       </div>
