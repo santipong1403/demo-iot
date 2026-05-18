@@ -342,12 +342,12 @@ export const STATIONS = [
     }
   },
   {
-    id: "SN_PTONN_KRATHUMBAN", code: "สน.ปตน.กระทุ่มแบน", name: "สน.ปตน.กระทุ่มแบน", shortName: "ปตน.กระทุ่มแบน",
+    id: "SN_PTONN_KRATHUMBAN", code: "สน.ปตร.กระทุ่มแบน", name: "สน.ปตร.กระทุ่มแบน", shortName: "ปตร.กระทุ่มแบน",
     x: 340, y: 793, type: "gate", status: "ok",
     desc: "สถานีปตน.กระทุ่มแบน ระบายน้ำในคลองภาษีเจริญตอนปลาย",
-    readings: { U: 0.54, D: 1.52, O: 0, P: 0 },
+    readings: { U: 0.54, D: 0.40, O: 0, P: 0 },
     info: {
-      province: "สมุทรสาคร", district: "กระทุ่มแบน", subdistrict: "กระทุ่มแบน",
+      province: "สมุทรสาคร", district: "ตลาดกระทุ่มแบน", subdistrict: "กระทุ่มแบน",
       region: "ภาคกลาง", basin: "ท่าจีน", office: "โครงการส่งน้ำฯ ภาษีเจริญ",
       lat: 13.6520, lng: 100.2650, buildYear: "2538", completeYear: "2540",
       gateCount: 4, gateType: "บานตรง", gateWidth: 4.0, gateHeight: 3.56,
