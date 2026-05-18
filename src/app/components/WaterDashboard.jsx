@@ -1009,11 +1009,25 @@ export default function WaterDashboard() {
                 <span style={{ fontSize: 9, color: "#94a3b8" }}>คลิกที่สถานีเพื่อดูรายละเอียด</span>
               </div>
               {/* เปลี่ยนจาก FlowMap เป็นรูปภาพ */}
-              <div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 12 }}>
+              <div style={{
+                flex: 1,
+                overflow: "hidden",
+                background: "#f8fafc",
+                position: "relative",
+              }}>
                 <img
                   src={`map.jpg`}
                   alt={`ผังโครงการ ${PROJECT_META.name}`}
-                  style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }}
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: "100%",
+                    display: "block"
+                  }}
                 />
               </div>
               <div style={{ padding: "6px 14px", background: "#fff", borderTop: "1px solid #e2e8f0", display: "flex", gap: 14, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
@@ -1084,20 +1098,20 @@ export default function WaterDashboard() {
                 <span style={{ fontSize: 10, color: "#94a3b8" }}>คลิกที่สถานีเพื่อดูรายละเอียด</span>
               </div>
             </div>
-<div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 20 }}>
-  {/* ห่อรูปด้วย relative container แล้ววาง overlay ซ้อน */}
-  <div style={{ position: "relative", width: "100%", maxWidth: "100%" }}>
-    <img
-      src={`${activeProject}flow.jpg`}
-      alt={`ผังน้ำ ${PROJECT_META.name}`}
-      style={{ width: "100%", height: "auto", display: "block" }}
-    />
-    {(() => {
-      const Overlay = FLOW_OVERLAYS[activeProject];
-      return Overlay ? <Overlay /> : null;
-    })()}
-  </div>
-</div>
+            <div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 20 }}>
+              {/* ห่อรูปด้วย relative container แล้ววาง overlay ซ้อน */}
+              <div style={{ position: "relative", width: "100%", maxWidth: "100%" }}>
+                <img
+                  src={`${activeProject}flow.jpg`}
+                  alt={`ผังน้ำ ${PROJECT_META.name}`}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+                {(() => {
+                  const Overlay = FLOW_OVERLAYS[activeProject];
+                  return Overlay ? <Overlay /> : null;
+                })()}
+              </div>
+            </div>
           </div>
         )}
       </div>
