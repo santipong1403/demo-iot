@@ -1072,7 +1072,7 @@ export default function WaterDashboard() {
                 {[["U", "#1d4ed8"], ["D", "#047857"], ["O", "#7c3aed"],].map(([l, c]) => (
                   <div key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "#64748b" }}>
                     <span style={{ width: 14, height: 14, borderRadius: 3, background: c + "18", border: `1px solid ${c}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: c }}>{l}</span>
-                    {l === "U" ? "ด้านใน" : l === "D" ? "ด้านนอก" : l === "O" ? "เปิดบาน" : "ระบาย"}
+                    {l === "U" ? "ระดับน้ำเหนือ" : l === "D" ? "ระดับน้ำท้าย" : l === "O" ? "เปิดบาน" : "ระบาย"}
                   </div>
                 ))}
                 <div style={{ width: 1, height: 14, background: "#e2e8f0" }} />
