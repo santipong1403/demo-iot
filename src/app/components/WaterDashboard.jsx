@@ -1016,7 +1016,7 @@ export default function WaterDashboard() {
                 position: "relative",
               }}>
                 <img
-                  src={`map.jpg`}
+                  src={activeProject === "phaseecharoen" ? "map01.jpg" : "map.jpg"}
                   alt={`ผังโครงการ ${PROJECT_META.name}`}
                   style={{
                     position: "absolute",
