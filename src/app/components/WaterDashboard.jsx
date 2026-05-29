@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 // ─── PROJECT DATA REGISTRY ────────────────────────────────────────────────────
-// นำเข้าจากไฟล์ข้อมูลแต่ละโครงการ
 import PhaseecharoenFlowMapOverlay from "./basinmanage/phaseecharoen";
+import PathumthaniFlowMapOverlay from "./basinmanage/pathumthani"
 import * as phaseecharoen from "./phaseecharoen";
 import * as angthong from "./angthong";
+import * as pathumthani from "./pathumthani";
 const PROJECTS = [
   { key: "phaseecharoen", meta: phaseecharoen.PROJECT_META, data: phaseecharoen },
   { key: "angthong", meta: angthong.PROJECT_META, data: angthong },
+  { key: "pathumthani",   meta: pathumthani.PROJECT_META,   data: pathumthani },  
 ];
+
 // ─── CONSTANTS (shared) ───────────────────────────────────────────────────────
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const CHART_COLORS = ["#1d4ed8", "#047857", "#b45309", "#b91c1c", "#6d28d9", "#0e7490"];
@@ -21,6 +24,7 @@ const STATUS_CONFIG = {
 function stCfg(s) { return STATUS_CONFIG[s] || STATUS_CONFIG.ok; }
 const FLOW_OVERLAYS = {
   phaseecharoen: PhaseecharoenFlowMapOverlay,
+  pathumthani:   PathumthaniFlowMapOverlay,
 };
 // ─── SVG ICONS ────────────────────────────────────────────────────────────────
 function IconDashboard({ size = 16, color = "currentColor" }) {
@@ -120,14 +124,17 @@ function ReadingBadge({ label, value, unit = "ม.รทก." }) {
   );
 }
 
-function ReadingsRow({ readings, compact = false }) {
+function ReadingsRow({ readings, compact = false, isPathumthani = false }) {
   const { U, D, O, P } = readings;
-  const badges = [
-    { label: "U", value: U, unit: "ม.รทก." },
-    { label: "D", value: D, unit: "ม.รทก." },
-    { label: "O", value: O, unit: "ม.พน." },
-    { label: "P", value: P, unit: "ซม.มล." },
-  ];
+  // pathumthani: แสดงเฉพาะ U (ระดับน้ำ)
+  const badges = isPathumthani
+    ? [{ label: "U", value: U, unit: "ม.รทก." }]
+    : [
+        { label: "U", value: U, unit: "ม.รทก." },
+        { label: "D", value: D, unit: "ม.รทก." },
+        { label: "O", value: O, unit: "ม.พน." },
+        { label: "P", value: P, unit: "ซม.มล." },
+      ];
   const shown = compact ? badges.filter(b => b.value !== null) : badges;
   if (shown.length === 0) return null;
   return (
@@ -234,7 +241,7 @@ function ProjectSwitcher({ currentProject, onSwitch }) {
 }
 
 // ─── STATS POPUP ──────────────────────────────────────────────────────────────
-function StatsPopup({ filterKey, label, color, bg, stations, onStationClick, onClose }) {
+function StatsPopup({ filterKey, label, color, bg, stations, onStationClick, onClose, isPathumthani }) {
   const filtered = filterKey === "all" ? stations : stations.filter(s => s.status === filterKey);
   const typeLabel = t => t === "gate" ? "ปตร./สน.ปตร." : "สถานีวัดน้ำ";
   return (
@@ -261,7 +268,7 @@ function StatsPopup({ filterKey, label, color, bg, stations, onStationClick, onC
                   <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{st.name}</div>
                   <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>{typeLabel(st.type)} · {st.info.province}</div>
                 </div>
-                <div style={{ flexShrink: 0 }}><ReadingsRow readings={st.readings} compact /></div>
+                <div style={{ flexShrink: 0 }}><ReadingsRow readings={st.readings} compact isPathumthani={isPathumthani} /></div>
                 <StatusBadge status={st.status} small />
               </div>
             );
@@ -276,10 +283,22 @@ function StatsPopup({ filterKey, label, color, bg, stations, onStationClick, onC
 }
 
 // ─── STATION MODAL ────────────────────────────────────────────────────────────
-function StationModal({ station, onClose }) {
+function StationModal({ station, onClose, isPathumthani }) {
   const [tab, setTab] = useState("water");
   const { info, readings } = station;
   const typeLabel = station.type === "gauging" ? "สถานีวัดน้ำอัตโนมัติ" : "ประตูระบายน้ำ / สถานีสูบน้ำ";
+
+  // ── กำหนด reading boxes ที่จะแสดงในหน้า water ──────────────────────────────
+  // pathumthani: แสดงเฉพาะ U (ระดับน้ำ)
+  const readingBoxes = isPathumthani
+    ? [
+        { key: "U", label: "U · ระดับน้ำ", val: readings.U, bg: "#eff6ff", border: "#bfdbfe", color: "#1d4ed8", unit: "ม.รทก." },
+      ]
+    : [
+        { key: "U", label: "U · ระดับน้ำเหนือ", val: readings.U, bg: "#eff6ff", border: "#bfdbfe", color: "#1d4ed8", unit: "ม.รทก." },
+        { key: "D", label: "D · ระดับน้ำท้าย", val: readings.D, bg: "#ecfdf5", border: "#6ee7b7", color: "#047857", unit: "ม.รทก." },
+        { key: "O", label: "O · เปิดบาน/จำนวน", val: readings.O, bg: "#faf5ff", border: "#ddd6fe", color: "#7c3aed", unit: "ม.พน." },
+      ];
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(3px)" }}
@@ -325,11 +344,7 @@ function StationModal({ station, onClose }) {
                   <IconDroplet size={12} color="#0e7490" /> ค่าวัดปัจจุบัน
                 </div>
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
-                  {[
-                    { key: "U", label: "U · ระดับน้ำเหนือ", val: readings.U, bg: "#eff6ff", border: "#bfdbfe", color: "#1d4ed8", unit: "ม.รทก." },
-                    { key: "D", label: "D · ระดับน้ำท้าย", val: readings.D, bg: "#ecfdf5", border: "#6ee7b7", color: "#047857", unit: "ม.รทก." },
-                    { key: "O", label: "O · เปิดบาน/จำนวน", val: readings.O, bg: "#faf5ff", border: "#ddd6fe", color: "#7c3aed", unit: "ม.พน." },
-                  ].map(({ key, label, val, bg, border, color, unit }) => (
+                  {readingBoxes.map(({ key, label, val, bg, border, color, unit }) => (
                     <div key={key} style={{ flex: 1, minWidth: 120, background: bg, borderRadius: 8, padding: "10px 14px", border: `1px solid ${border}` }}>
                       <div style={{ fontSize: 9, fontWeight: 700, color, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>{label}</div>
                       <div style={{ fontSize: 22, fontWeight: 700, color, fontFamily: "'IBM Plex Mono',monospace", lineHeight: 1 }}>
@@ -339,7 +354,8 @@ function StationModal({ station, onClose }) {
                       {key === "U" && val !== null && <div style={{ marginTop: 6, height: 24 }}><MiniSparkline data={station.series.level} color={color} h={24} /></div>}
                     </div>
                   ))}
-                  {readings.P !== null && readings.P !== undefined && (
+                  {/* P ยังคงแสดงสำหรับทุกโครงการ (ถ้ามีค่า) */}
+                  {!isPathumthani && readings.P !== null && readings.P !== undefined && (
                     <div style={{ flex: 1, minWidth: 120, background: "#fff7ed", borderRadius: 8, padding: "10px 14px", border: "1px solid #fed7aa" }}>
                       <div style={{ fontSize: 9, fontWeight: 700, color: "#c2410c", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>P · ปริมาณการระบาย</div>
                       <div style={{ fontSize: 22, fontWeight: 700, color: "#c2410c", fontFamily: "'IBM Plex Mono',monospace", lineHeight: 1 }}>{readings.P}</div>
@@ -562,7 +578,6 @@ function FlowMap({ stations, mapStations, onStationClick, renderCanals }) {
           {Array.from({ length: Math.ceil(W / 40) }).map((_, i) => <line key={`v${i}`} x1={i * 40} y1={0} x2={i * 40} y2={H} stroke="rgba(226,232,240,0.6)" strokeWidth={0.5} />)}
           {Array.from({ length: Math.ceil(H / 40) }).map((_, i) => <line key={`h${i}`} x1={0} y1={i * 40} x2={W} y2={i * 40} stroke="rgba(226,232,240,0.6)" strokeWidth={0.5} />)}
           {renderCanals && renderCanals(H)}
-
           {mapStations.map(({ id, x, y }) => {
             const st = stMap[id];
             if (!st) return null;
@@ -608,7 +623,7 @@ function FlowMap({ stations, mapStations, onStationClick, renderCanals }) {
 }
 
 // ─── STAT CARD ────────────────────────────────────────────────────────────────
-function StatCard({ station, onClick }) {
+function StatCard({ station, onClick, isPathumthani }) {
   const cfg = stCfg(station.status);
   return (
     <div onClick={() => onClick(station)} style={{ borderRadius: 7, padding: "8px 10px", border: "1px solid #f1f5f9", background: "#fff", cursor: "pointer", borderLeft: `2.5px solid ${cfg.color}` }}
@@ -619,7 +634,7 @@ function StatCard({ station, onClick }) {
         <span style={{ fontSize: 9, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, flex: 1 }}>{station.shortName}</span>
         <StatusBadge status={station.status} small />
       </div>
-      <ReadingsRow readings={station.readings} compact />
+      <ReadingsRow readings={station.readings} compact isPathumthani={isPathumthani} />
       {station.series && (
         <div style={{ marginTop: 4, height: 16 }}><MiniSparkline data={station.series.level} color={cfg.color} h={16} /></div>
       )}
@@ -738,10 +753,15 @@ function ForecastTab({ stations }) {
 }
 
 // ─── WATER INFORMATION TAB ────────────────────────────────────────────────────
-function WaterInformationTab({ stations, stationListForCompare, onStationClick }) {
+function WaterInformationTab({ stations, stationListForCompare, onStationClick, isPathumthani }) {
   const [activeMetric, setActiveMetric] = useState("level");
   const [selectedForChart, setSelectedForChart] = useState(new Set([stationListForCompare[0]]));
   const [activeTimeRange, setActiveTimeRange] = useState("24 ชม.");
+
+  // pathumthani: เมื่อเปลี่ยน metric เป็น flow แล้วถูก disable ให้ fallback กลับ level
+  const metricOptions = isPathumthani
+    ? [["level", "ระดับน้ำ"], ["rain", "ปริมาณฝน"]]
+    : [["level", "ระดับน้ำ"], ["flow", "น้ำท่า"], ["rain", "ปริมาณฝน"]];
 
   const toggleChart = (id) => {
     setSelectedForChart(prev => {
@@ -760,12 +780,19 @@ function WaterInformationTab({ stations, stationListForCompare, onStationClick }
     return { data: st.series[activeMetric] || st.series.level, color: CHART_COLORS[stIndex % CHART_COLORS.length], label: st.shortName };
   }).filter(Boolean);
 
+  // ── คอลัมน์ตาราง: pathumthani แสดงเฉพาะระดับน้ำ (U) ──────────────────────
+  const tableHeaders = isPathumthani
+    ? ["", "สถานี", "ประเภท", "ระดับน้ำ (ม.รทก.)", "สถานะ", ""]
+    : ["", "สถานี", "ประเภท", "U (ม.รทก.)", "D (ม.รทก.)", "O (ม.พน.)", "P (ซม.มล.)", "สถานะ", ""];
+
+  const fmt = v => v === null ? <span style={{ color: "#cbd5e1" }}>—</span> : <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600 }}>{typeof v === "number" ? (v > 10 ? v.toFixed(2) : `+${v.toFixed(2)}`) : v}</span>;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
       <div style={{ padding: "9px 20px", background: "#fff", borderBottom: "1px solid #f1f5f9", display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", flexShrink: 0 }}>
         <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
           <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>ประเภท</span>
-          {[["level", "ระดับน้ำ"], ["flow", "น้ำท่า"], ["rain", "ปริมาณฝน"]].map(([id, l]) => (
+          {metricOptions.map(([id, l]) => (
             <Chip key={id} active={activeMetric === id} onClick={() => setActiveMetric(id)}>{l}</Chip>
           ))}
         </div>
@@ -814,7 +841,7 @@ function WaterInformationTab({ stations, stationListForCompare, onStationClick }
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
                 <tr style={{ background: "#f8fafc" }}>
-                  {["", "สถานี", "ประเภท", "U (ม.รทก.)", "D (ม.รทก.)", "O (ม.พน.)", "P (ซม.มล.)", "สถานะ", ""].map((h, i) => (
+                  {tableHeaders.map((h, i) => (
                     <th key={i} style={{ padding: "8px 10px", textAlign: "left", fontSize: 9, color: "#94a3b8", fontWeight: 700, borderBottom: "1px solid #e2e8f0", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
@@ -824,7 +851,6 @@ function WaterInformationTab({ stations, stationListForCompare, onStationClick }
                   const cfg = stCfg(st.status);
                   const typeLabel = st.type === "gauging" ? "สถานีวัดน้ำ" : "ปตร./สน.ปตร.";
                   const r = st.readings;
-                  const fmt = v => v === null ? <span style={{ color: "#cbd5e1" }}>—</span> : <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600 }}>{typeof v === "number" ? (v > 10 ? v.toFixed(2) : `+${v.toFixed(2)}`) : v}</span>;
                   return (
                     <tr key={st.id} style={{ borderBottom: "1px solid #f8fafc", background: i % 2 ? "#fafafa" : "#fff" }}
                       onMouseEnter={e => { e.currentTarget.style.background = "#eff6ff"; }}
@@ -832,10 +858,18 @@ function WaterInformationTab({ stations, stationListForCompare, onStationClick }
                       <td style={{ padding: "7px 8px 7px 12px" }}><StationTypeIconBox type={st.type} size={14} /></td>
                       <td style={{ padding: "7px 10px", fontWeight: 600, color: "#0f172a", whiteSpace: "nowrap" }}>{st.shortName}</td>
                       <td style={{ padding: "7px 10px", color: "#64748b", fontSize: 11 }}>{typeLabel}</td>
-                      <td style={{ padding: "7px 10px", color: "#1d4ed8" }}>{fmt(r.U)}</td>
-                      <td style={{ padding: "7px 10px", color: "#047857" }}>{fmt(r.D)}</td>
-                      <td style={{ padding: "7px 10px", color: "#7c3aed" }}>{fmt(r.O)}</td>
-                      <td style={{ padding: "7px 10px", color: "#c2410c" }}>{fmt(r.P)}</td>
+                      {isPathumthani ? (
+                        // pathumthani: แสดงแค่ U
+                        <td style={{ padding: "7px 10px", color: "#1d4ed8" }}>{fmt(r.U)}</td>
+                      ) : (
+                        // โครงการอื่น: แสดง U D O P
+                        <>
+                          <td style={{ padding: "7px 10px", color: "#1d4ed8" }}>{fmt(r.U)}</td>
+                          <td style={{ padding: "7px 10px", color: "#047857" }}>{fmt(r.D)}</td>
+                          <td style={{ padding: "7px 10px", color: "#7c3aed" }}>{fmt(r.O)}</td>
+                          <td style={{ padding: "7px 10px", color: "#c2410c" }}>{fmt(r.P)}</td>
+                        </>
+                      )}
                       <td style={{ padding: "7px 10px" }}><StatusBadge status={st.status} small /></td>
                       <td style={{ padding: "7px 10px" }}>
                         <button onClick={() => onStationClick(st)} style={{ padding: "3px 9px", border: "1px solid #bfdbfe", borderRadius: 4, fontSize: 10, cursor: "pointer", color: "#1d4ed8", background: "#eff6ff", fontFamily: "inherit", fontWeight: 600 }}>
@@ -871,7 +905,6 @@ export default function WaterDashboard() {
   const [selectedStation, setSelectedStation] = useState(null);
   const [statsPopup, setStatsPopup] = useState(null);
 
-  // ── เมื่อสลับโครงการให้รีเซ็ตสถานะที่เกี่ยวข้อง ──────────────────────────
   const handleProjectSwitch = (key) => {
     setActiveProject(key);
     setSelectedStation(null);
@@ -883,25 +916,30 @@ export default function WaterDashboard() {
     tick(); const t = setInterval(tick, 1000); return () => clearInterval(t);
   }, []);
 
-  // ── ดึงข้อมูลจากโครงการที่เลือก ─────────────────────────────────────────
   const project = PROJECTS.find(p => p.key === activeProject);
   const { STATIONS, CAMERAS, STATION_LIST_FOR_COMPARE, MAP_STATIONS, PROJECT_META, renderCanals } = project.data;
 
-  const summaryStats = [
+  const isPathumthani = activeProject === "pathumthani";
+
+  // ── summaryStats: ซ่อน ปตร./สน.ปตร. และ สถานีวัดน้ำ เมื่อเป็น pathumthani ──
+  const allSummaryStats = [
     { label: "สถานีทั้งหมด", value: STATIONS.length, Icon: IconStation, color: "#1d4ed8", bg: "#eff6ff", filterKey: "all" },
     { label: "สถานีปกติ", value: STATIONS.filter(s => s.status === "ok").length, Icon: IconCheckCircle, color: "#047857", bg: "#ecfdf5", filterKey: "ok" },
     { label: "เฝ้าระวัง", value: STATIONS.filter(s => s.status === "warn").length, Icon: IconWarn, color: "#b45309", bg: "#fffbeb", filterKey: "warn" },
     { label: "วิกฤต", value: STATIONS.filter(s => s.status === "danger").length, Icon: IconAlert, color: "#b91c1c", bg: "#fef2f2", filterKey: "danger" },
-    { label: "ปตร./สน.ปตร.", value: STATIONS.filter(s => s.type === "gate").length, Icon: IconGate, color: "#0e7490", bg: "#f0f9ff", filterKey: "all" },
-    { label: "สถานีวัดน้ำ", value: STATIONS.filter(s => s.type === "gauging").length, Icon: IconDroplet, color: "#6d28d9", bg: "#faf5ff", filterKey: "all" },
+    { label: "ปตร./สน.ปตร.", value: STATIONS.filter(s => s.type === "gate").length, Icon: IconGate, color: "#0e7490", bg: "#f0f9ff", filterKey: "all", hideForPathumthani: true },
+    { label: "สถานีวัดน้ำ", value: STATIONS.filter(s => s.type === "gauging").length, Icon: IconDroplet, color: "#6d28d9", bg: "#faf5ff", filterKey: "all", hideForPathumthani: true },
   ];
+  const summaryStats = isPathumthani
+    ? allSummaryStats.filter(s => !s.hideForPathumthani)
+    : allSummaryStats;
 
   const tabs = [
     { id: "dashboard", label: "Dashboard", Icon: IconDashboard },
     { id: "waterinformation", label: "ข้อมูลน้ำ", Icon: IconWater },
     { id: "compare", label: "เปรียบเทียบ", Icon: IconCompare },
     { id: "forecast", label: "คาดการณ์", Icon: IconForecast },
-    { id: "flowmap", label: "ผังน้ำ", Icon: IconMap },
+    { id: "flowmap", label: isPathumthani ? "เส้นทางน้ำ" : "ผังน้ำ", Icon: IconMap },
   ];
 
   const accentColor = PROJECT_META.color;
@@ -934,7 +972,6 @@ export default function WaterDashboard() {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* PROJECT SWITCHER */}
           <ProjectSwitcher currentProject={activeProject} onSwitch={handleProjectSwitch} />
           <div style={{ width: 1, height: 24, background: "#e2e8f0" }} />
           <div style={{ textAlign: "right" }}>
@@ -983,51 +1020,45 @@ export default function WaterDashboard() {
                   </div>
                 ))}
               </div>
-              <div style={{ background: "#fff", borderRadius: 7, padding: "8px 10px", border: "1px solid #f1f5f9" }}>
-                <div style={{ fontSize: 8, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>สัญลักษณ์ค่าวัด</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 8px" }}>
-                  {[["U", "#1d4ed8", "#eff6ff", "ระดับน้ำเหนือ"], ["D", "#047857", "#ecfdf5", "ระดับน้ำท้าย"], ["O", "#7c3aed", "#faf5ff", "เปิดบาน (ม.พน.)"],].map(([l, c, bg, desc]) => (
-                    <div key={l} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                      <span style={{ width: 16, height: 16, borderRadius: 3, background: bg, border: `1px solid ${c}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: c, flexShrink: 0 }}>{l}</span>
-                      <span style={{ fontSize: 8, color: "#64748b", lineHeight: 1.2 }}>{desc}</span>
-                    </div>
-                  ))}
+
+              {/* สัญลักษณ์ค่าวัด: ซ่อนเมื่อ pathumthani */}
+              {!isPathumthani && (
+                <div style={{ background: "#fff", borderRadius: 7, padding: "8px 10px", border: "1px solid #f1f5f9" }}>
+                  <div style={{ fontSize: 8, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>สัญลักษณ์ค่าวัด</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 8px" }}>
+                    {[["U", "#1d4ed8", "#eff6ff", "ระดับน้ำเหนือ"], ["D", "#047857", "#ecfdf5", "ระดับน้ำท้าย"], ["O", "#7c3aed", "#faf5ff", "เปิดบาน (ม.พน.)"]].map(([l, c, bg, desc]) => (
+                      <div key={l} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <span style={{ width: 16, height: 16, borderRadius: 3, background: bg, border: `1px solid ${c}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: c, flexShrink: 0 }}>{l}</span>
+                        <span style={{ fontSize: 8, color: "#64748b", lineHeight: 1.2 }}>{desc}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
               <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 4px 0" }}>
                 <div style={{ width: 2, height: 12, background: accentColor, borderRadius: 1 }} />
                 <span style={{ fontSize: 9, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>สถานีทั้งหมด ({STATIONS.length})</span>
               </div>
-              {STATIONS.map(st => <StatCard key={st.id} station={st} onClick={setSelectedStation} />)}
+              {STATIONS.map(st => (
+                <StatCard key={st.id} station={st} onClick={setSelectedStation} isPathumthani={isPathumthani} />
+              ))}
             </aside>
             <main style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 14px", background: "#fff", borderBottom: "1px solid #e2e8f0", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <IconMap size={13} color={accentColor} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: accentColor }}>ผังโครงการ – {PROJECT_META.name}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: accentColor }}>
+                    {isPathumthani ? "เส้นทางน้ำ" : "ผังโครงการ"} – {PROJECT_META.name}
+                  </span>
                 </div>
                 <span style={{ fontSize: 9, color: "#94a3b8" }}>คลิกที่สถานีเพื่อดูรายละเอียด</span>
               </div>
-              {/* เปลี่ยนจาก FlowMap เป็นรูปภาพ */}
-              <div style={{
-                flex: 1,
-                overflow: "hidden",
-                background: "#f8fafc",
-                position: "relative",
-              }}>
+              <div style={{ flex: 1, overflow: "hidden", background: "#f8fafc", position: "relative" }}>
                 <img
                   src={activeProject === "phaseecharoen" ? "map01.jpg" : "map.jpg"}
-                  alt={`ผังโครงการ ${PROJECT_META.name}`}
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "100%",
-                    height: "auto",
-                    maxHeight: "100%",
-                    display: "block"
-                  }}
+                  alt={`${isPathumthani ? "เส้นทางน้ำ" : "ผังโครงการ"} ${PROJECT_META.name}`}
+                  style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "100%", height: "auto", maxHeight: "100%", display: "block" }}
                 />
               </div>
               <div style={{ padding: "6px 14px", background: "#fff", borderTop: "1px solid #e2e8f0", display: "flex", gap: 14, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
@@ -1053,9 +1084,7 @@ export default function WaterDashboard() {
                 {CAMERAS.map(cam => {
                   const st = STATIONS.find(s => s.id === cam.stationId);
                   return (
-                    <CameraFeed key={cam.id} cam={cam} station={st} onClick={() => {
-                      if (st) setSelectedStation(st);
-                    }} />
+                    <CameraFeed key={cam.id} cam={cam} station={st} onClick={() => { if (st) setSelectedStation(st); }} />
                   );
                 })}
               </div>
@@ -1065,7 +1094,12 @@ export default function WaterDashboard() {
 
         {/* WATER INFORMATION */}
         {activeTab === "waterinformation" && (
-          <WaterInformationTab stations={STATIONS} stationListForCompare={STATION_LIST_FOR_COMPARE} onStationClick={setSelectedStation} />
+          <WaterInformationTab
+            stations={STATIONS}
+            stationListForCompare={STATION_LIST_FOR_COMPARE}
+            onStationClick={setSelectedStation}
+            isPathumthani={isPathumthani}
+          />
         )}
 
         {/* COMPARE */}
@@ -1080,16 +1114,22 @@ export default function WaterDashboard() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 20px", background: "#fff", borderBottom: "1px solid #e2e8f0", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                 <IconMap size={14} color={accentColor} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>ผังน้ำ – {PROJECT_META.name}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>
+                  {isPathumthani ? "เส้นทางน้ำ" : "ผังน้ำ"} – {PROJECT_META.name}
+                </span>
               </div>
               <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                {[["U", "#1d4ed8"], ["D", "#047857"], ["O", "#7c3aed"],].map(([l, c]) => (
-                  <div key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "#64748b" }}>
-                    <span style={{ width: 14, height: 14, borderRadius: 3, background: c + "18", border: `1px solid ${c}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: c }}>{l}</span>
-                    {l === "U" ? "ระดับน้ำเหนือ" : l === "D" ? "ระดับน้ำท้าย" : l === "O" ? "เปิดบาน" : "ระบาย"}
-                  </div>
-                ))}
-                <div style={{ width: 1, height: 14, background: "#e2e8f0" }} />
+                {!isPathumthani && (
+                  <>
+                    {[["U", "#1d4ed8"], ["D", "#047857"], ["O", "#7c3aed"]].map(([l, c]) => (
+                      <div key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "#64748b" }}>
+                        <span style={{ width: 14, height: 14, borderRadius: 3, background: c + "18", border: `1px solid ${c}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: c }}>{l}</span>
+                        {l === "U" ? "ระดับน้ำเหนือ" : l === "D" ? "ระดับน้ำท้าย" : "เปิดบาน"}
+                      </div>
+                    ))}
+                    <div style={{ width: 1, height: 14, background: "#e2e8f0" }} />
+                  </>
+                )}
                 {[["#047857", "ปกติ"], ["#b45309", "เฝ้าระวัง"], ["#b91c1c", "วิกฤต"]].map(([c, l]) => (
                   <div key={l} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#64748b" }}>
                     <div style={{ width: 8, height: 8, borderRadius: "50%", background: c }} />{l}
@@ -1099,11 +1139,10 @@ export default function WaterDashboard() {
               </div>
             </div>
             <div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 20 }}>
-              {/* ห่อรูปด้วย relative container แล้ววาง overlay ซ้อน */}
               <div style={{ position: "relative", width: "100%", maxWidth: "100%" }}>
                 <img
                   src={`${activeProject}flow.jpg`}
-                  alt={`ผังน้ำ ${PROJECT_META.name}`}
+                  alt={`${isPathumthani ? "เส้นทางน้ำ" : "ผังน้ำ"} ${PROJECT_META.name}`}
                   style={{ width: "100%", height: "auto", display: "block" }}
                 />
                 {(() => {
@@ -1117,7 +1156,13 @@ export default function WaterDashboard() {
       </div>
 
       {/* MODALS */}
-      {selectedStation && <StationModal station={selectedStation} onClose={() => setSelectedStation(null)} />}
+      {selectedStation && (
+        <StationModal
+          station={selectedStation}
+          onClose={() => setSelectedStation(null)}
+          isPathumthani={isPathumthani}
+        />
+      )}
       {statsPopup && (
         <StatsPopup
           filterKey={statsPopup.filterKey}
@@ -1127,6 +1172,7 @@ export default function WaterDashboard() {
           stations={STATIONS}
           onStationClick={st => { setSelectedStation(st); }}
           onClose={() => setStatsPopup(null)}
+          isPathumthani={isPathumthani}
         />
       )}
     </div>
