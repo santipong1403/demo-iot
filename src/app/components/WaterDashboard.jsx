@@ -1176,7 +1176,7 @@ function CompareTab({ activeProject }) {
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function WaterDashboard() {
-  const [activeProject,setActiveProject]=useState("phaseecharoen");
+  const [activeProject,setActiveProject]=useState("pathumthani");
   const [activeTab,setActiveTab]=useState("dashboard");
   const [time,setTime]=useState("");
   const [selectedStation,setSelectedStation]=useState(null);
